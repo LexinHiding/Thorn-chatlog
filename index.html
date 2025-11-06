@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Space Communications Terminal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Courier+Prime:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            overflow-x: hidden;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .terminal-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+            border: 1px solid #333;
+            box-shadow: 
+                0 0 30px rgba(0, 255, 0, 0.1),
+                inset 0 0 50px rgba(0, 0, 0, 0.8);
+        }
+        
+        .terminal-header {
+            background: #1a1a1a;
+            border-bottom: 2px solid #00ff00;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .terminal-title {
+            font-size: 0.9rem;
+            color: #00ff00;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+        }
+        
+        .terminal-status {
+            display: flex;
+            gap: 15px;
+            font-size: 0.75rem;
+            color: #666;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff00;
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .terminal-body {
+            padding: 30px;
+            min-height: 600px;
+        }
+        
+        .encryption-notice {
+            text-align: center;
+            color: #666;
+            font-size: 0.8rem;
+            padding: 15px;
+            border: 1px solid #333;
+            margin-bottom: 30px;
+            background: rgba(0, 255, 0, 0.02);
+        }
+        
+        .message-block {
+            margin-bottom: 40px;
+            border-left: 2px solid #00ff00;
+            padding-left: 20px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        .message-header {
+            color: #00ff00;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        
+        .message-id {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        .timestamp {
+            color: #666;
+        }
+        
+        .message-content {
+            color: #aaa;
+            line-height: 1.8;
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+        
+        .message-content p {
+            margin-bottom: 10px;
+        }
+        
+        .signature {
+            color: #00ff00;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        
+        .encoded {
+            color: #004400;
+            font-family: 'Courier Prime', monospace;
+            letter-spacing: 0.05rem;
+        }
+        
+        .decoding {
+            animation: decode 0.3s;
+        }
+        
+        @keyframes decode {
+            0%, 50% { 
+                color: #00ff00;
+                text-shadow: 0 0 10px #00ff00;
+            }
+            100% { 
+                color: #aaa;
+                text-shadow: none;
+            }
+        }
+        
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 14px;
+            background: #00ff00;
+            margin-left: 2px;
+            animation: cursorBlink 0.8s infinite;
+        }
+        
+        @keyframes cursorBlink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+        
+        .terminal-footer {
+            background: #1a1a1a;
+            border-top: 1px solid #333;
+            padding: 10px 20px;
+            font-size: 0.7rem;
+            color: #666;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .terminal-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .terminal-body {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-title">Sunti's Corporate Communications</div>
+            <div class="terminal-status">
+                <div class="status-item">
+                    <div class="status-dot"></div>
+                    <span>SECURE</span>
+                </div>
+                <div class="status-item">
+                    <span>DECRYPTING</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="terminal-body">
+            <div class="encryption-notice">
+                Encryption Header: C.R. // PRIORITY SIGMA // CHANNEL: AMB-14-SUNTI
+            </div>
+            
+            <div id="messages-container"></div>
+        </div>
+        
+        <div class="terminal-footer">
+            CLASSIFIED TRANSMISSION // CORPORATE RELAY NETWORK // END-TO-END ENCRYPTED
+        </div>
+    </div>
+    
+    <script>
+        const messages = [
+            {
+                id: "Message 01",
+                timestamp: "13/11/2000 23:14",
+                content: [
+                    "Status update: Lina's condition deteriorating.",
+                    "Haven remains unaware of the underlying cause.",
+                    "Terraformer discussions conveniently resurfaced—Clarence pressing for expedited approval. Suspicious but potentially useful."
+                ],
+                signature: "—S. Thorn"
+            },
+            {
+                id: "Message 02",
+                timestamp: "14/11/2000 00:32",
+                content: [
+                    "I've maintained rapport with Haven.",
+                    "It's working.",
+                    "The chaos here is… intoxicating, in its way. Dangerous thought.",
+                    "Separate concern: Luna Grey's presence on Eeki remains unusual. Why would Earth's Prime Minister's daughter be stationed here? Monitoring the situation."
+                ],
+                signature: "—S."
+            },
+            {
+                id: "Message 03",
+                timestamp: "14/11/2000 02:09",
+                content: [
+                    'Directive received: "Minimize sentiment." Understood.',
+                    "But sentiment is the lever, not the liability.",
+                    "LINA trusts no one. Haven still needs someone to blame. If Eeki falls, I can claim it was strategy. Let them write my name in their reports; at least they'll remember it."
+                ],
+                signature: "—Sunti Thorn"
+            },
+            {
+                id: "Message 04",
+                timestamp: "14/11/2000 04:18",
+                content: [
+                    "Cross-reference incident logs—Lina's private channel was accessed by someone outside her command window.",
+                    "Evidence inconclusive. I can make it conclusive if Corporate requires a clean narrative.",
+                    "Awaiting instructions regarding announcement timing."
+                ],
+                signature: "—Ambassador Thorn"
+            }
+        ];
+        
+        function generateEncoded(text) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*';
+            return text.split('').map(char => {
+                if (char === ' ') return ' ';
+                if (char === '\n') return '\n';
+                return chars[Math.floor(Math.random() * chars.length)];
+            }).join('');
+        }
+        
+        function decodeText(element, originalText, delay = 0) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    let encoded = generateEncoded(originalText);
+                    element.textContent = encoded;
+                    element.classList.add('encoded');
+                    
+                    let decoded = 0;
+                    const totalChars = originalText.length;
+                    const decodeInterval = setInterval(() => {
+                        if (decoded >= totalChars) {
+                            clearInterval(decodeInterval);
+                            element.classList.remove('encoded');
+                            resolve();
+                            return;
+                        }
+                        
+                        const charsToReveal = Math.min(3, totalChars - decoded);
+                        for (let i = 0; i < charsToReveal; i++) {
+                            encoded = encoded.substring(0, decoded) + 
+                                     originalText[decoded] + 
+                                     encoded.substring(decoded + 1);
+                            decoded++;
+                        }
+                        
+                        element.textContent = encoded;
+                        element.classList.add('decoding');
+                        setTimeout(() => element.classList.remove('decoding'), 300);
+                        
+                    }, 50);
+                }, delay);
+            });
+        }
+        
+        async function displayMessages() {
+            const container = document.getElementById('messages-container');
+            
+            for (let i = 0; i < messages.length; i++) {
+                const msg = messages[i];
+                const block = document.createElement('div');
+                block.className = 'message-block';
+                block.style.animationDelay = `${i * 0.3}s`;
+                
+                const header = document.createElement('div');
+                header.className = 'message-header';
+                header.innerHTML = `
+                    <span class="message-id">${msg.id}</span>
+                    <span class="timestamp">Timestamp: ${msg.timestamp}</span>
+                `;
+                
+                const content = document.createElement('div');
+                content.className = 'message-content';
+                
+                msg.content.forEach(line => {
+                    const p = document.createElement('p');
+                    content.appendChild(p);
+                });
+                
+                const signature = document.createElement('div');
+                signature.className = 'signature';
+                
+                block.appendChild(header);
+                block.appendChild(content);
+                block.appendChild(signature);
+                container.appendChild(block);
+                
+                await new Promise(resolve => setTimeout(resolve, (i + 1) * 300));
+                
+                const paragraphs = content.querySelectorAll('p');
+                for (let j = 0; j < msg.content.length; j++) {
+                    await decodeText(paragraphs[j], msg.content[j], j * 200);
+                }
+                
+                await decodeText(signature, msg.signature, 200);
+                
+                await new Promise(resolve => setTimeout(resolve, 800));
+            }
+        }
+        
+        displayMessages();
+    </script>
+</body>
+</html>
